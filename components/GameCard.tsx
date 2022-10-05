@@ -1,10 +1,8 @@
 import {IGame} from "../types/IGame";
-import {Card} from "@mui/material";
+import {Button, Card, Grid} from "@mui/material";
 function GameCard(game: IGame) {
     return(
-        <Card>
-            <h1 style={{color: "red"}}>{game.name} 	&rarr;</h1>
-        </Card>
+            <Grid item style={{backgroundColor: "blue"}}>{game.name} 	&rarr;</Grid>
     )
 }
 
