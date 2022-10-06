@@ -9,17 +9,19 @@ import {IGame} from "../types/IGame";
 
 export default function Home() {
   return (
-      <Container style={{backgroundColor: "red", height: "100vh", minWidth: "100vw"}}>
+      <Container style={{backgroundColor: "#081c15", height: "100vh", minWidth: "100vw"}}>
           <Box m="auto"
               display="flex"
               width="60vw" height="40vh"
-              bgcolor="lightblue"
+              bgcolor="#40916c"
+              borderRadius={5}
+              marginBottom={8}
           >
               <Box m="auto">
                   1. Box (margin: auto)
               </Box>
           </Box>
-          <Container style={{backgroundColor: "blue", width: "30vw"}}>
+          <Container style={{width: "30vw"}}>
               <Grid container rowSpacing={2} columnSpacing={5}>
                   {gamesdata.map(game => (
                       <Grid item xs={6} sm={6} key={game.name} >
