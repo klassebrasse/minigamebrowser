@@ -9,16 +9,16 @@ import {IGame} from "../types/IGame";
 
 export default function Home() {
   return (
-      <Container style={{backgroundColor: "#081c15", height: "100vh", minWidth: "100vw"}}>
+      <Container className={styles.mainConatiner} style={{height: "100vh", minWidth: "100vw"}}>
           <Box m="auto"
               display="flex"
               width="60vw" height="40vh"
-              bgcolor="#40916c"
-              borderRadius={5}
-              marginBottom={8}
+
+
           >
-              <Box m="auto">
-                  1. Box (margin: auto)
+              <Box m="auto" style={{textAlign: "center", color: "darkslategrey"}}>
+                  <h1>JAJA</h1>
+                  <h1>PICK A GAME</h1>
               </Box>
           </Box>
           <Container style={{width: "30vw"}}>
@@ -28,7 +28,7 @@ export default function Home() {
                           <Card className={styles.card}>
                               <CardHeader
                                   title={game.name}
-                                  subheader={game.players}
+                                  subheader={<p>{"Players: " + game.players}</p>}
                               />
                           </Card>
                       </Grid>
