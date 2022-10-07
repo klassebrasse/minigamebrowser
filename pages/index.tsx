@@ -24,14 +24,7 @@ export default function Home() {
           <Container style={{width: "30vw"}}>
               <Grid container rowSpacing={2} columnSpacing={5}>
                   {gamesdata.map(game => (
-                      <Grid item xs={6} sm={6} key={game.name} >
-                          <Card className={styles.card}>
-                              <CardHeader
-                                  title={game.name}
-                                  subheader={<p>{"Players: " + game.players}</p>}
-                              />
-                          </Card>
-                      </Grid>
+                      <GameCard name={game.name} players={game.players} key={game.name}/>
                   ))}
               </Grid>
           </Container>

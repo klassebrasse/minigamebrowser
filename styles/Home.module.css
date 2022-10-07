@@ -98,8 +98,8 @@
 .card:hover,
 .card:focus,
 .card:active {
-
   background-position: left;
+  cursor: pointer;
 }
 
 .card h2 {
