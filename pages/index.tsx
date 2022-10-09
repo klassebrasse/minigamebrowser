@@ -6,21 +6,12 @@ import GameCard from "../components/GameCard";
 import {Box, Card, CardContent, CardHeader, Container, Divider, Grid} from "@mui/material";
 import gamesdata from "../data/games.json"
 import {IGame} from "../types/IGame";
+import HeaderBox from "../components/HeaderBox";
 
 export default function Home() {
   return (
-      <Container className={styles.mainConatiner} style={{height: "100vh", minWidth: "100vw"}}>
-          <Box m="auto"
-              display="flex"
-              width="60vw" height="40vh"
-
-
-          >
-              <Box m="auto" style={{textAlign: "center", color: "darkslategrey"}}>
-                  <h1>JAJA</h1>
-                  <h1>PICK A GAME</h1>
-              </Box>
-          </Box>
+      <Container>
+          <HeaderBox Header="MINIGAMES" SubHeader="PICK A GAME"/>
           <Container style={{width: "30vw"}}>
               <Grid container rowSpacing={2} columnSpacing={5}>
                   {gamesdata.map(game => (

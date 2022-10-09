@@ -3,8 +3,9 @@
   padding: 0 2rem;
 }
 
-.mainConatiner{
-  background-image: linear-gradient(to bottom right, #264653, #2a9d8f);
+.mainContainer{
+  height: 100vh;
+  minWidth: 100vw
 }
 
 .main {
@@ -68,10 +69,6 @@
   font-size: 1.1rem;
   font-family: Menlo, Monaco, Lucida Console, Liberation Mono, DejaVu Sans Mono,
     Bitstream Vera Sans Mono, Courier New, monospace;
-}
-
-.MuiCardHeader-subheader{
-  color: red;
 }
 
 .grid {

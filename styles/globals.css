@@ -15,12 +15,15 @@ a {
   box-sizing: border-box;
 }
 
+
 @media (prefers-color-scheme: dark) {
   html {
     color-scheme: dark;
+    margin: 0;
+    height: 100%;
   }
   body {
     color: white;
-    background: black;
+    background-image: linear-gradient(to bottom right, #264653, #2a9d8f);
   }
 }

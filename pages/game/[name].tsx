@@ -1,15 +1,41 @@
+import {useEffect, useState} from "react";
 import Head from "next/head";
 import {IGame} from "../../types/IGame";
 import gamesdata from "../../data/games.json"
+import {Container, Box} from "@mui/material";
+import HeaderBox from "../../components/HeaderBox";
+import PlayerList from "../../components/PlayerList";
+import playersdata from "../../data/players.json";
+
 
 function GamePage({game}: {game: IGame}) {
+
+    const [players, setPlayers] = useState([]);
+    useEffect(()=>{
+        setPlayers(playersdata)
+        console.log(players)
+    },[players])
     return(
-        <div>
+        <Container>
             <Head>
-                <title>{game.name}</title>
+                <title>{game.name.toUpperCase()}</title>
             </Head>
-            <h1>{game.name}</h1>
-        </div>
+            <HeaderBox Header={game.name.toUpperCase()} SubHeader="Invite your friends and start playing"/>
+            <Box sx={{marginX: "auto",
+                marginY: 5,
+                display: "flex",
+                width: "60vw", height: "10vh", justifyContent: "center", color: "#2a9d8f"}}>
+                <Box sx={{marginRight:20, border: 2, paddingX: 5, borderRadius: 3, ":hover":{cursor: "pointer"}}} onClick={()=> alert("Play")}>
+                    <h1>Play</h1>
+                </Box>
+                <Box sx={{marginLeft:20, border: 2, paddingX: 5, borderRadius: 3, ":hover":{cursor: "pointer"}}} onClick={()=> alert("Settings")}>
+                    <h1>Settings</h1>
+                </Box>
+
+
+            </Box>
+            <PlayerList players={players}/>
+        </Container>
     )
 }
 
