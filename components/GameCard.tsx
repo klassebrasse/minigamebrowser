@@ -7,7 +7,7 @@ function GameCard(game: IGame) {
 
     return(
         <Grid item xs={6} sm={6} key={game.name} >
-            <Card className={styles.card} onClick={() => router.push("/game/" + game.name.toLowerCase())}>
+            <Card className={styles.card} onClick={() => router.push("/game/" + game.name.toLowerCase(), undefined, { shallow: true })}>
                     <CardHeader
                         title={game.name}
                         subheader={<p>{"Players: " + game.players}</p>}

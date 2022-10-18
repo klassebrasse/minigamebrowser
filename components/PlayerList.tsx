@@ -7,9 +7,13 @@ function PlayerList({players} : {players: IPlayer[]}) {
             <List>
             {players.map(player => (
                 <ListItem key={player.id} >
-                    <h1>{player.id}</h1>
-                    <h1>{player.nickname}</h1>
-                    <h1>{player.score}</h1>
+                    <Box sx={{flexGrow: 1, display: "flex", flexDirection: "row", borderBottom: 1, alignItems: "flex-end"}}>
+                        <h2>{player.id}</h2>
+                        <h2>{player.nickname}</h2>
+                        <h2>{player.score}</h2>
+                        <h2>{player.score}</h2>
+                    </Box>
+
                 </ListItem>
             ))}
             </List>
