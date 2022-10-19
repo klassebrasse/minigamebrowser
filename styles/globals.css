@@ -27,3 +27,8 @@ a {
     background-image: linear-gradient(to bottom right, #264653, #2a9d8f);
   }
 }
+.MuiContainer-root {
+  width: 100vw;
+  padding-left: 0;
+  padding-right: 0;
+}

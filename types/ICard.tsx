@@ -1,4 +1,4 @@
-export interface IHistory{
+export interface ICard {
     event: string,
     year: string
 }

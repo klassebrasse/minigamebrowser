@@ -10,31 +10,51 @@ import {InferGetServerSidePropsType} from "next";
 import socket from "../../../services/socket";
 import getHistorical from "../../../services/api";
 import fetch, {Headers} from "node-fetch";
-import {IHistory} from "../../../types/IHistory";
+import {ICard} from "../../../types/ICard";
+import MainCardDeck from "../../../components/GamePlayComponents/MainCardDeck";
+import {IPlayer} from "../../../types/IPlayer";
+import OtherPlayerCard from "../../../components/GamePlayComponents/OtherPlayerCard";
+import CurrentCard from "../../../components/GamePlayComponents/CurrentCard";
 
 
 function LobbyPage({ data }: InferGetServerSidePropsType<typeof getServerSideProps>) {
 
 
-    const [players, setPlayers] = useState<ILobby[]>([]);
+    const [players, setPlayers] = useState<IPlayer[]>([]);
     const [lobby, setLobby] = useState<ILobby>();
-    const [history, setHistory] = useState<IHistory[]>(null);
-    const [currentCard, setCurrentCard] = useState(0);
+    const [currentCard, setCurrentCard] = useState<ICard>();
+
+
+
+    const [history, setHistory] = useState<ICard[]>();
+    const [currentHistoryCard, setCurrentHistoryCard] = useState(0);
+    const [country, setCountry] = useState<ICard[]>();
+    const [currentCountryCard, setCurrentCountryCard] = useState(0);
+    const [sports, setSports] = useState<ICard[]>();
+    const [currentSportsCard, setCurrentSportsCard] = useState(0);
+    const [tech, setTech] = useState<ICard[]>();
+    const [currentTechCard, setCurrentTechCard] = useState(0);
+
+    async function getCards() {
+        setHistory(await getHistorical('sweden'));
+        setSports(await getHistorical('sports'));
+        setCountry(await getHistorical('country'));
+        setTech(await getHistorical('tech'));
+    }
+    function sleep(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
 
     useEffect(() => {
-
         (async () => {
-            setHistory(await getHistorical());
-            console.log(history)
+            await getCards();
         })();
 
         fetchPlayers()
+
         socket.on('new-user', payload => {
             setPlayers(payload)
         })
-
-
-
     },[])
 
     function fetchPlayers() {
@@ -43,33 +63,68 @@ function LobbyPage({ data }: InferGetServerSidePropsType<typeof getServerSidePro
         })
     }
 
-    async function getHis(){
-        setHistory(await getHistorical());
+    function cardChosen(deckChosen){
+        switch (deckChosen) {
+            case 'history':
+                setCurrentCard(history[currentHistoryCard])
+                setCurrentHistoryCard(currentHistoryCard + 1)
+                break;
+
+            case 'sports':
+                setCurrentCard(sports[currentSportsCard])
+                setCurrentSportsCard(currentSportsCard + 1)
+                break;
+
+            case 'tech':
+                setCurrentCard(tech[currentTechCard])
+                setCurrentTechCard(currentTechCard + 1)
+                break;
+
+            case 'country':
+                setCurrentCard(country[currentCountryCard])
+                setCurrentCountryCard(currentCountryCard + 1)
+                break;
+        }
     }
 
-    return(
-        <Container>
 
-            <Box sx={{
-                display: 'flex',
-                flexDirection: 'row',
-                p: 1,
-                m: 1,
+    return(
+
+        <Container sx={{maxWidth: '100vw', minWidth: '100vw'}}>
+
+            <Box sx={{display: 'flex', justifyContent: 'center', p: 10}}>
+                {currentCard && (
+                    <CurrentCard card={currentCard}/>
+                )}
+            </Box>
+            <Container sx={{
+                    display: 'flex',
+                    flexDirection: 'row',
+                    justifyContent: 'space-evenly',
+                    p: 1,
+                    maxWidth: '60vw',
 
             }}>
-                <Card sx={{width: 240, height: 360, m: "auto"}} onClick={() => setCurrentCard(currentCard + 1)}>
-                    <CardContent>
-                        {history &&
-                            <Typography sx={{ fontSize: 14 }}>
-                                {history[currentCard].event}
-                            </Typography>
-                        }
+                <MainCardDeck category="History" cardClicked={() => cardChosen('history')}/>
+                <MainCardDeck category="Sports" cardClicked={() => cardChosen('sports')}/>
+                <MainCardDeck category="Country" cardClicked={() => cardChosen('country')}/>
+                <MainCardDeck category="Tech" cardClicked={() => cardChosen('tech')}/>
+            </Container>
 
-                    </CardContent>
-                </Card>
+            <Box  sx={{
+                display: 'flex',
+                flexDirection: 'row',
+                justifyContent: 'space-evenly',
+                p: 1,
+
+
+            }}>
+                {players.map(p => (
+                    <OtherPlayerCard key={p.id} player={p}/>
+                ))}
+
             </Box>
 
-            <PlayerList players={players}/>
         </Container>
     )
 }
