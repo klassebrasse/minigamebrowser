@@ -7,7 +7,6 @@ async function getHistorical(cat: string) {
 
     const response = await fetch('https://api.api-ninjas.com/v1/historicalevents?text=' + cat, {headers});
     const data = await response.json();
-    console.log(data)
     return data;
 }
 

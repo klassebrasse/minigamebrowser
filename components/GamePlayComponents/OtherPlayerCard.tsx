@@ -3,7 +3,7 @@ import {Box, List, ListItem, Typography} from "@mui/material";
 
 function OtherPlayerCard({player}: {player: IPlayer}) {
     return(
-        <Box sx={{ border: 1, borderRadius: 3, borderWidth:2, backgroundColor: "#264653", width: "30vw"}}>
+        <Box sx={{ border: 1, borderRadius: 3, borderWidth:2, backgroundColor: "#264653", width: "30vw", pt: 10}}>
 
             <Box sx={{
                 display: 'flex',

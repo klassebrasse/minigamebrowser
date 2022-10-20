@@ -1,5 +1,7 @@
+import {IPlayer} from "./IPlayer";
+
 export interface ILobby {
     id: string,
-    nickname: string,
-    score: number,
+    gameName: string,
+    players: IPlayer[]
 }

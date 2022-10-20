@@ -1,9 +1,13 @@
-import {Card, CardContent, Typography} from "@mui/material";
+import {Card, CardContent, CardHeader, Typography} from "@mui/material";
 
-function MainCardDeck({cardClicked, category}) {
+function MainCardDeck({cardClicked, category, color}) {
     return(
-        <Card sx={{width: 160, height: 240, m: "auto", backgroundColor: "#8250ff"}} onClick={() => cardClicked()}>
-
+        <Card sx={{width: 160, height: 60, m: "auto", backgroundColor: color, textAlign: 'center', ":hover":{cursor: "pointer", backgroundColor: "#2a9d8f"}}} onClick={() => cardClicked()}>
+            <CardContent>
+                <Typography sx={{ fontSize: 16, fontWeight: 'bold' }}>
+                    {category}
+                </Typography>
+            </CardContent>
         </Card>
     )
 }

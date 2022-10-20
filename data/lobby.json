@@ -1,27 +1,23 @@
 [
   {
-    "id": "123",
-    "nickname": "KlasseBrasse",
-    "score": 0
-  },
-  {
     "id": "234",
-    "nickname": "Jöjje",
-    "score": 0
-  },
-  {
-    "id": "345",
-    "nickname": "Jöns",
-    "score": 0
-  },
-  {
-    "id": "888",
-    "nickname": "Jöns",
-    "score": 0
-  },
-  {
-    "id": "9",
-    "nickname": "Jöns",
-    "score": 0
+    "gameName": "Uno",
+    "players": [
+      {
+        "id": "123",
+        "nickname": "KlasseBrasse",
+        "score": 0
+      },
+      {
+        "id": "234",
+        "nickname": "Jöjje",
+        "score": 0
+      },
+      {
+        "id": "345",
+        "nickname": "Jöns",
+        "score": 0
+      }
+    ]
   }
 ]

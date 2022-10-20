@@ -2,7 +2,7 @@ import {useEffect, useState} from "react";
 import Head from "next/head";
 import {ILobby} from "../../../types/ILobby";
 import lobbydata from "../../../data/lobby.json"
-import {Container, Box, CardHeader, Card, CardContent, Typography, CardActions} from "@mui/material";
+import {Container, Box, CardHeader, Card, CardContent, Typography, CardActions, Modal} from "@mui/material";
 import HeaderBox from "../../../components/HeaderBox";
 import PlayerList from "../../../components/PlayerList";
 import playersdata from "../../../data/players.json";
@@ -15,16 +15,17 @@ import MainCardDeck from "../../../components/GamePlayComponents/MainCardDeck";
 import {IPlayer} from "../../../types/IPlayer";
 import OtherPlayerCard from "../../../components/GamePlayComponents/OtherPlayerCard";
 import CurrentCard from "../../../components/GamePlayComponents/CurrentCard";
-
+import CircularStatic from "../../../components/ProgresSpinner";
+import * as React from "react";
 
 function LobbyPage({ data }: InferGetServerSidePropsType<typeof getServerSideProps>) {
 
+    const [isLoading, setIsLoading] = useState<boolean>(true);
+    const [progress, setProgress] = useState(0);
 
     const [players, setPlayers] = useState<IPlayer[]>([]);
     const [lobby, setLobby] = useState<ILobby>();
     const [currentCard, setCurrentCard] = useState<ICard>();
-
-
 
     const [history, setHistory] = useState<ICard[]>();
     const [currentHistoryCard, setCurrentHistoryCard] = useState(0);
@@ -35,32 +36,35 @@ function LobbyPage({ data }: InferGetServerSidePropsType<typeof getServerSidePro
     const [tech, setTech] = useState<ICard[]>();
     const [currentTechCard, setCurrentTechCard] = useState(0);
 
-    async function getCards() {
-        setHistory(await getHistorical('sweden'));
-        setSports(await getHistorical('sports'));
-        setCountry(await getHistorical('country'));
-        setTech(await getHistorical('tech'));
-    }
-    function sleep(ms) {
-        return new Promise(resolve => setTimeout(resolve, ms));
-    }
+    const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
     useEffect(() => {
+        setProgress(5);
         (async () => {
             await getCards();
+            await setPlayers(data.players);
+            await sleep(400);
+            setProgress(100);
         })();
 
-        fetchPlayers()
 
-        socket.on('new-user', payload => {
-            setPlayers(payload)
-        })
+
+
     },[])
 
+    async function getCards() {
+        setHistory(await getHistorical('sweden'));
+        setProgress(30)
+        setSports(await getHistorical('sports'));
+        setProgress(55)
+        setCountry(await getHistorical('country'));
+        setProgress(85)
+        setTech(await getHistorical('tech'));
+        setProgress(99)
+    }
+
     function fetchPlayers() {
-        socket.emit('joined-lobby', ({ar}: {ar: ILobby[]}) => {
-            setPlayers(ar)
-        })
+
     }
 
     function cardChosen(deckChosen){
@@ -87,28 +91,23 @@ function LobbyPage({ data }: InferGetServerSidePropsType<typeof getServerSidePro
         }
     }
 
-
     return(
-
         <Container sx={{maxWidth: '100vw', minWidth: '100vw'}}>
-
-            <Box sx={{display: 'flex', justifyContent: 'center', p: 10}}>
-                {currentCard && (
-                    <CurrentCard card={currentCard}/>
-                )}
+            <Box sx={{display: 'flex', justifyContent: 'center', p: 5}}>
+                <CurrentCard card={currentCard}/>
             </Box>
             <Container sx={{
                     display: 'flex',
                     flexDirection: 'row',
                     justifyContent: 'space-evenly',
                     p: 1,
+                    pb: 5,
                     maxWidth: '60vw',
-
             }}>
-                <MainCardDeck category="History" cardClicked={() => cardChosen('history')}/>
-                <MainCardDeck category="Sports" cardClicked={() => cardChosen('sports')}/>
-                <MainCardDeck category="Country" cardClicked={() => cardChosen('country')}/>
-                <MainCardDeck category="Tech" cardClicked={() => cardChosen('tech')}/>
+                <MainCardDeck color="#528D70" category="History" cardClicked={() => cardChosen('history')}/>
+                <MainCardDeck color="#658FC9" category="Sports" cardClicked={() => cardChosen('sports')}/>
+                <MainCardDeck color="#F77EEC" category="Country" cardClicked={() => cardChosen('country')}/>
+                <MainCardDeck color="#FC8F3A" category="Tech" cardClicked={() => cardChosen('tech')}/>
             </Container>
 
             <Box  sx={{
@@ -119,12 +118,39 @@ function LobbyPage({ data }: InferGetServerSidePropsType<typeof getServerSidePro
 
 
             }}>
-                {players.map(p => (
+                {players.filter(p => p.id !== socket.id).map(p => (
                     <OtherPlayerCard key={p.id} player={p}/>
                 ))}
+            </Box>
+            <Box>
+                <Box sx={{ border: 1, borderRadius: 3, borderWidth:2, backgroundColor: "#264653", width: "75vw", m: 'auto', mt: 5, pt: 10}}>
 
+                    <Box sx={{
+                        display: 'flex',
+                        flexDirection: 'row',
+                        p: 1,
+                        m: 1,
+
+                    }}>
+                        <Typography sx={{m: 'auto'}}>123</Typography>
+                        <Typography sx={{m: 'auto'}}>Score: 213</Typography>
+                    </Box>
+
+                </Box>
             </Box>
 
+            
+            
+            <Modal open={progress < 100}>
+                <Box sx={{  position: 'absolute' as 'absolute',
+                    top: '50%',
+                    left: '50%',
+                    transform: 'translate(-50%, -50%)',
+                    }} >
+                    <CircularStatic progress={progress}/>
+                </Box>
+
+            </Modal>
         </Container>
     )
 }
