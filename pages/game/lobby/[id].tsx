@@ -25,7 +25,6 @@ function LobbyPage({ data, cards }: InferGetServerSidePropsType<typeof getServer
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [progress, setProgress] = useState(0);
 
-    const [players, setPlayers] = useState<IPlayer[]>([]);
     const [lobby, setLobby] = useState<ILobby>(data);
     const [currentCard, setCurrentCard] = useState<ICard>();
 
@@ -65,20 +64,14 @@ function LobbyPage({ data, cards }: InferGetServerSidePropsType<typeof getServer
         }*/
 
 
-    },[])
+    },[lobby])
     async function getCards() {
         setHistory(cards[0]);
         setSports(cards[1]);
         setCountry(cards[2]);
         setTech(cards[3]);
     }
-    function aja(){
-        console.log(lobby)
-        let newLobbyData = lobby;
-        newLobbyData.players[0].nickname = "JAJJAJA"
-        setLobby(newLobbyData);
-        console.log(lobby)
-    }
+
     async function getFirstCards(){
         let index = 0;
         await lobby.players.forEach(p => {
@@ -117,6 +110,9 @@ function LobbyPage({ data, cards }: InferGetServerSidePropsType<typeof getServer
         const playerCards = lobby.players[0].cards;
         if (currentCard.year < playerCards[index].year){
             alert("Yes. " + currentCard.year + " is before " + playerCards[index].year)
+            let temp = lobby;
+            temp.players[0].cards.push(currentCard);
+            setLobby(temp);
         }
         else {
             alert("wrong")
@@ -125,17 +121,36 @@ function LobbyPage({ data, cards }: InferGetServerSidePropsType<typeof getServer
 
     function afterAction(index: number, pid: string){
         const playerCards = lobby.players[0].cards;
-        if (currentCard.year > playerCards[index].year){
-            alert("Yes. " + currentCard.year + " is after " + playerCards[index].year)
+
+        //If last card
+        if (playerCards.length === index + 1){
+            if (currentCard.year > playerCards[index].year){
+                alert("Yes. " + currentCard.year + " is after " + playerCards[index].year)
+                let temp = lobby;
+                temp.players[0].cards.push(currentCard);
+                setLobby(temp);
+            }
+            else {
+                alert("wrong")
+            }
         }
         else {
-            alert("wrong")
+            if (currentCard.year > playerCards[index].year && currentCard.year < playerCards[index + 1].year){
+                alert("Yes. " + currentCard.year + " is after " + playerCards[index].year + ". And " + currentCard.year + " is before " + playerCards[index + 1].year)
+                let temp = lobby;
+                temp.players[0].cards.push(currentCard);
+                setLobby(temp);
+            }
+            else {
+                alert("wrong")
+            }
         }
+
     }
 
     return(
         <Container sx={{maxWidth: '100vw', minWidth: '100vw'}}>
-            <Button variant="outlined" onClick={() => aja()}/>
+            <h3>{currentTurn.nickname}s turn</h3>
             <Box sx={{display: 'flex', justifyContent: 'center', p: 5}}>
                 <CurrentCard card={currentCard}/>
             </Box>

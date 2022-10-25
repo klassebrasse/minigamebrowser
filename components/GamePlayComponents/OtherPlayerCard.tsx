@@ -15,11 +15,13 @@ function OtherPlayerCard({player, beforeButton, afterButton} : PassingPropsPlaye
                 backgroundColor: "lightBlue"
 
             }}>
-                {player.cards.map((c, index) => (
+                {player.cards.sort((a,b) => parseInt(a.year) - parseInt(b.year)).map((c, index) => (
                     <Box key={index} sx={{display: 'flex', flexDirection: "row", m: 'auto'}}>
-                        <Button onClick={() => beforeButton(index)}>
-                            <h5>Before {c.year}</h5>
-                        </Button>
+                        {index === 0 && (
+                            <Button onClick={() => beforeButton(index)}>
+                                <h5>Before {c.year}</h5>
+                            </Button>
+                        )}
                     <CardOnBoard card={c}/>
                         <Button onClick={() => afterButton(index)}>
                             <h5>After {c.year}</h5>
