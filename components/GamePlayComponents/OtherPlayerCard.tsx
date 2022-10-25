@@ -18,12 +18,12 @@ function OtherPlayerCard({player, beforeButton, afterButton} : PassingPropsPlaye
                 {player.cards.sort((a,b) => parseInt(a.year) - parseInt(b.year)).map((c, index) => (
                     <Box key={index} sx={{display: 'flex', flexDirection: "row", m: 'auto'}}>
                         {index === 0 && (
-                            <Button onClick={() => beforeButton(index)}>
+                            <Button onClick={() => beforeButton(index, player.id)}>
                                 <h5>Before {c.year}</h5>
                             </Button>
                         )}
                     <CardOnBoard card={c}/>
-                        <Button onClick={() => afterButton(index)}>
+                        <Button onClick={() => afterButton(index, player.id)}>
                             <h5>After {c.year}</h5>
                         </Button>
                     </Box>
