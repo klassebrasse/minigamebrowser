@@ -6,17 +6,34 @@
       {
         "id": "123",
         "nickname": "KlasseBrasse",
-        "score": 0
+        "score": 0,
+        "cards": [
+
+        ]
       },
       {
         "id": "234",
         "nickname": "Jöjje",
-        "score": 0
+        "score": 0,
+        "cards": [
+
+        ]
       },
       {
         "id": "345",
         "nickname": "Jöns",
-        "score": 0
+        "score": 0,
+        "cards": [
+
+        ]
+      },
+      {
+        "id": "999",
+        "nickname": "MainPlayer",
+        "score": 0,
+        "cards": [
+
+        ]
       }
     ]
   }

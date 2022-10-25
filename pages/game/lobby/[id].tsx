@@ -2,7 +2,7 @@ import {useEffect, useState} from "react";
 import Head from "next/head";
 import {ILobby} from "../../../types/ILobby";
 import lobbydata from "../../../data/lobby.json"
-import {Container, Box, CardHeader, Card, CardContent, Typography, CardActions, Modal} from "@mui/material";
+import {Container, Box, CardHeader, Card, CardContent, Typography, CardActions, Modal, Button} from "@mui/material";
 import HeaderBox from "../../../components/HeaderBox";
 import PlayerList from "../../../components/PlayerList";
 import playersdata from "../../../data/players.json";
@@ -18,13 +18,15 @@ import CurrentCard from "../../../components/GamePlayComponents/CurrentCard";
 import CircularStatic from "../../../components/ProgresSpinner";
 import * as React from "react";
 
-function LobbyPage({ data }: InferGetServerSidePropsType<typeof getServerSideProps>) {
+function LobbyPage({ data, cards }: InferGetServerSidePropsType<typeof getServerSideProps>) {
 
+    const Lobby: ILobby = data;
+    const [mainPlayerData, setMainPlayerData] = useState<IPlayer>(null);
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [progress, setProgress] = useState(0);
 
     const [players, setPlayers] = useState<IPlayer[]>([]);
-    const [lobby, setLobby] = useState<ILobby>();
+    const [lobby, setLobby] = useState<ILobby>(data);
     const [currentCard, setCurrentCard] = useState<ICard>();
 
     const [history, setHistory] = useState<ICard[]>();
@@ -36,35 +38,55 @@ function LobbyPage({ data }: InferGetServerSidePropsType<typeof getServerSidePro
     const [tech, setTech] = useState<ICard[]>();
     const [currentTechCard, setCurrentTechCard] = useState(0);
 
+    const [currentTurn, setCurrentTurn] = useState<IPlayer>(Lobby.players[3]);
+
     const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
     useEffect(() => {
-        setProgress(5);
-        (async () => {
-            await getCards();
-            await setPlayers(data.players);
-            await sleep(400);
-            setProgress(100);
-        })();
+        if(progress !== 100){
+            (async () => {
+                await getCards();
+                await getFirstCards();
+                setProgress(100)
+            })()
+        }
 
+        //alert(currentTurn.nickname)
 
+/*        if(progress !== 100){
+            setProgress(5);
+            //setLobby(Lobby);
+
+            (async () => {
+                await getCards();
+                await sleep(400);
+                setProgress(100)
+            })()
+        }*/
 
 
     },[])
-
     async function getCards() {
-        setHistory(await getHistorical('sweden'));
-        setProgress(30)
-        setSports(await getHistorical('sports'));
-        setProgress(55)
-        setCountry(await getHistorical('country'));
-        setProgress(85)
-        setTech(await getHistorical('tech'));
-        setProgress(99)
+        setHistory(cards[0]);
+        setSports(cards[1]);
+        setCountry(cards[2]);
+        setTech(cards[3]);
     }
-
-    function fetchPlayers() {
-
+    function aja(){
+        console.log(lobby)
+        let newLobbyData = lobby;
+        newLobbyData.players[0].nickname = "JAJJAJA"
+        setLobby(newLobbyData);
+        console.log(lobby)
+    }
+    async function getFirstCards(){
+        let index = 0;
+        await lobby.players.forEach(p => {
+            if(p.cards.length < 1){
+                p.cards.push(cards[0][index]);
+            }
+            index++;
+        })
     }
 
     function cardChosen(deckChosen){
@@ -91,8 +113,29 @@ function LobbyPage({ data }: InferGetServerSidePropsType<typeof getServerSidePro
         }
     }
 
+    function beforeAction(index: number, pid: string){
+        const playerCards = lobby.players[0].cards;
+        if (currentCard.year < playerCards[index].year){
+            alert("Yes. " + currentCard.year + " is before " + playerCards[index].year)
+        }
+        else {
+            alert("wrong")
+        }
+    }
+
+    function afterAction(index: number, pid: string){
+        const playerCards = lobby.players[0].cards;
+        if (currentCard.year > playerCards[index].year){
+            alert("Yes. " + currentCard.year + " is after " + playerCards[index].year)
+        }
+        else {
+            alert("wrong")
+        }
+    }
+
     return(
         <Container sx={{maxWidth: '100vw', minWidth: '100vw'}}>
+            <Button variant="outlined" onClick={() => aja()}/>
             <Box sx={{display: 'flex', justifyContent: 'center', p: 5}}>
                 <CurrentCard card={currentCard}/>
             </Box>
@@ -118,8 +161,8 @@ function LobbyPage({ data }: InferGetServerSidePropsType<typeof getServerSidePro
 
 
             }}>
-                {players.filter(p => p.id !== socket.id).map(p => (
-                    <OtherPlayerCard key={p.id} player={p}/>
+                {lobby.players.filter(p => p.id !== "999").map(p => (
+                    <OtherPlayerCard key={p.id} player={p} beforeButton={(index, pid) => beforeAction(index, pid)} afterButton={(index, pid) => afterAction(index, pid)}/>
                 ))}
             </Box>
             <Box>
@@ -132,15 +175,18 @@ function LobbyPage({ data }: InferGetServerSidePropsType<typeof getServerSidePro
                         m: 1,
 
                     }}>
-                        <Typography sx={{m: 'auto'}}>123</Typography>
-                        <Typography sx={{m: 'auto'}}>Score: 213</Typography>
+
+                        <Typography sx={{m: 'auto'}}>{lobby.players.find(p => p.id == "999") && lobby.players.find(p => p.id == "999").nickname}</Typography>
+                        <Typography sx={{m: 'auto'}}>Score: {lobby.players.find(p => p.id == "999") && lobby.players.find(p => p.id == "999").score}</Typography>
+
+
                     </Box>
 
                 </Box>
             </Box>
 
-            
-            
+
+
             <Modal open={progress < 100}>
                 <Box sx={{  position: 'absolute' as 'absolute',
                     top: '50%',
@@ -156,34 +202,36 @@ function LobbyPage({ data }: InferGetServerSidePropsType<typeof getServerSidePro
 }
 
 export async function getServerSideProps(context) {
-    //YuAhR6x2/fckgC8JWJOcBA==K7gB4sAqTFD250vK
-    let data: ILobby = lobbydata.find(lid => lid.id == context.query.id)
-/*    const meta = {
-        'X-Api-Key': 'YuAhR6x2/fckgC8JWJOcBA==K7gB4sAqTFD250vK'
-    };
-    const headers = new Headers(meta);
+    let data: ILobby = lobbydata.find(lid => lid.id == context.query.id);
 
-    var data;
-    const response = fetch('https://api.api-ninjas.com/v1/historicalevents?text=sweden', {headers})
-        .then(res => res.text())
-        .then(text => console.log(text));*/
+    //If socket.id exists on lobby: Authorized
+    let socketId = data.players.find(p => p.id == socket.id);
 
+    let cards: ICard[] = [];
 
+    //socket.emit('get lobby', (context.query.id, callback) => {
+    //      callback.cards
+    //      callback.lobby
+    //    }
+
+    cards.push(await getHistorical('sweden'));
+    cards.push(await getHistorical('sports'));
+    cards.push(await getHistorical('country'));
+    cards.push(await getHistorical('tech'));
 
 
 
 
     if(!data){
-
         return {
             notFound: true
         }
     }
-    data.id = context.query.id
+
+
+
     return {
-        props: {data}, // will be passed to the page component as props
+        props: {data, cards}, // will be passed to the page component as props
     }
 }
 export default LobbyPage;
-
-

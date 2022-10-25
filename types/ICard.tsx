@@ -1,4 +1,5 @@
 export interface ICard {
     event: string,
-    year: string
+    year: string,
+    color: string
 }

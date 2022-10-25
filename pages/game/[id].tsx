@@ -14,39 +14,47 @@ import {useRouter} from "next/router";
 
 
 function GamePage({ data }: InferGetServerSidePropsType<typeof getServerSideProps>) {
+    const Lobby: ILobby = data;
+
     const router = useRouter();
     const [players, setPlayers] = useState([]);
-    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isModalOpen, setIsModalOpen] = useState(true);
     const [username, setUsername] = useState("");
 
     useEffect(()=>{
-        socket.emit('load users', payload => {
-            setPlayers(payload)
+        socket.emit('connect to room', Lobby.id);
+
+        socket.emit('load users', Lobby.id, (callback) => {
+            setPlayers(callback.players)
         })
 
-        setPlayers(data.players)
+        socket.on('update users from server', players => {
+            setPlayers(players)
+        })
+
+        socket.on('play', () => {
+            router.push('/game/lobby/234');
+        });
+
+        //setPlayers(Lobby.players)
 
     },[])
 
     function newUser() {
-        socket.emit('new-user', username);
-        players.push(      {
-            "id": "123",
-            "nickname": "KlasseBrasse",
-            "score": 0
-        })
+        socket.emit('new user', Lobby.id, username, socket.id);
+        console.log("SOCKETIDIIDIDID:       " + socket.id)
         setIsModalOpen(false)
     }
 
     function startGame(){
-        router.push('/game/lobby/234');
+        socket.emit('start game', Lobby.id);
     }
     return(
         <Container>
             <Head>
-                <title>{data.id.toUpperCase()}</title>
+                <title>{Lobby.id.toUpperCase()}</title>
             </Head>
-            <HeaderBox Header={data.id.toUpperCase()} SubHeader="Invite your friends and start playing"/>
+            <HeaderBox Header={Lobby.id.toUpperCase()} SubHeader="Invite your friends and start playing"/>
             <Box sx={{marginX: "auto",
                 marginY: 5,
                 display: "flex",
