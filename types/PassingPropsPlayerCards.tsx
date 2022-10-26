@@ -4,5 +4,6 @@ import React from "react";
 export interface PassingPropsPlayerCards {
     "player": IPlayer,
     "beforeButton": any,
-    "afterButton": any
+    "afterButton": any,
+    "isPlayersTurn": boolean
 }

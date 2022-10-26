@@ -2,7 +2,7 @@ import {Box, Button, Typography} from "@mui/material";
 import CardOnBoard from "./CardOnBoard";
 import {PassingPropsPlayerCards} from "../../types/PassingPropsPlayerCards";
 
-function OtherPlayerCard({player, beforeButton, afterButton} : PassingPropsPlayerCards) {
+function OtherPlayerCard({player, beforeButton, afterButton, isPlayersTurn} : PassingPropsPlayerCards) {
 
     return(
         <Box sx={{ border: 1, borderRadius: 3, borderWidth:2, backgroundColor: "#264653", width: "30vw"}}>
@@ -16,17 +16,9 @@ function OtherPlayerCard({player, beforeButton, afterButton} : PassingPropsPlaye
 
             }}>
                 {player.cards.sort((a,b) => parseInt(a.year) - parseInt(b.year)).map((c, index) => (
-                    <Box key={index} sx={{display: 'flex', flexDirection: "row", m: 'auto'}}>
-                        {index === 0 && (
-                            <Button onClick={() => beforeButton(index, player.id)}>
-                                <h5>Before {c.year}</h5>
-                            </Button>
-                        )}
-                    <CardOnBoard card={c}/>
-                        <Button onClick={() => afterButton(index, player.id)}>
-                            <h5>After {c.year}</h5>
-                        </Button>
-                    </Box>
+
+                    <CardOnBoard key={index} card={c}/>
+
 
                 ))}
             </Box>

@@ -2,7 +2,18 @@ import {useEffect, useState} from "react";
 import Head from "next/head";
 import {ILobby} from "../../../types/ILobby";
 import lobbydata from "../../../data/lobby.json"
-import {Container, Box, CardHeader, Card, CardContent, Typography, CardActions, Modal, Button} from "@mui/material";
+import {
+    Container,
+    Box,
+    CardHeader,
+    Card,
+    CardContent,
+    Typography,
+    CardActions,
+    Modal,
+    Button,
+    IconButton
+} from "@mui/material";
 import HeaderBox from "../../../components/HeaderBox";
 import PlayerList from "../../../components/PlayerList";
 import playersdata from "../../../data/players.json";
@@ -17,6 +28,12 @@ import OtherPlayerCard from "../../../components/GamePlayComponents/OtherPlayerC
 import CurrentCard from "../../../components/GamePlayComponents/CurrentCard";
 import CircularStatic from "../../../components/ProgresSpinner";
 import * as React from "react";
+import CardOnBoard from "../../../components/GamePlayComponents/CardOnBoard";
+import {FaDice} from "react-icons/fa";
+import Grid from "@mui/system/Unstable_Grid";
+import {GiHorizontalFlip} from "react-icons/gi";
+import SelectSvg from "../../../public/SelectSvg";
+
 
 function LobbyPage({ data, cards }: InferGetServerSidePropsType<typeof getServerSideProps>) {
 
@@ -27,6 +44,7 @@ function LobbyPage({ data, cards }: InferGetServerSidePropsType<typeof getServer
 
     const [lobby, setLobby] = useState<ILobby>(data);
     const [currentCard, setCurrentCard] = useState<ICard>();
+    const [currentCategory, setCurrentCategory] = useState("");
 
     const [history, setHistory] = useState<ICard[]>();
     const [currentHistoryCard, setCurrentHistoryCard] = useState(0);
@@ -87,22 +105,56 @@ function LobbyPage({ data, cards }: InferGetServerSidePropsType<typeof getServer
             case 'history':
                 setCurrentCard(history[currentHistoryCard])
                 setCurrentHistoryCard(currentHistoryCard + 1)
+                setCurrentCategory('history')
                 break;
 
             case 'sports':
                 setCurrentCard(sports[currentSportsCard])
                 setCurrentSportsCard(currentSportsCard + 1)
+                setCurrentCategory('sports')
                 break;
 
             case 'tech':
                 setCurrentCard(tech[currentTechCard])
                 setCurrentTechCard(currentTechCard + 1)
+                setCurrentCategory('tech')
                 break;
 
             case 'country':
                 setCurrentCard(country[currentCountryCard])
                 setCurrentCountryCard(currentCountryCard + 1)
+                setCurrentCategory('country')
                 break;
+        }
+    }
+
+    function randomCard(){
+        const randomDeck = Math.floor(Math.random() * 4);
+        switch (randomDeck) {
+            case 0:
+                setCurrentCard(history[currentHistoryCard])
+                setCurrentHistoryCard(currentHistoryCard + 1)
+                setCurrentCategory('history')
+                break;
+
+            case 1:
+                setCurrentCard(sports[currentSportsCard])
+                setCurrentSportsCard(currentSportsCard + 1)
+                setCurrentCategory('sports')
+                break;
+
+            case 2:
+                setCurrentCard(tech[currentTechCard])
+                setCurrentTechCard(currentTechCard + 1)
+                setCurrentCategory('tech')
+                break;
+
+            case 3:
+                setCurrentCard(country[currentCountryCard])
+                setCurrentCountryCard(currentCountryCard + 1)
+                setCurrentCategory('country')
+                break;
+
         }
     }
 
@@ -117,6 +169,7 @@ function LobbyPage({ data, cards }: InferGetServerSidePropsType<typeof getServer
         }
         else {
             alert("wrong")
+            changeTurn();
         }
     }
 
@@ -133,6 +186,7 @@ function LobbyPage({ data, cards }: InferGetServerSidePropsType<typeof getServer
             }
             else {
                 alert("wrong")
+                changeTurn();
             }
         }
         else {
@@ -144,15 +198,42 @@ function LobbyPage({ data, cards }: InferGetServerSidePropsType<typeof getServer
             }
             else {
                 alert("wrong")
+                changeTurn();
             }
         }
 
     }
+    const mySocketId = "999";
+    const [indexTurn, setIndexTurn] = useState(0);
+    function changeTurn(){
+        setCurrentTurn(lobby.players[indexTurn]);
+        if (indexTurn == 3)
+            setIndexTurn(0);
+        else
+            setIndexTurn(indexTurn + 1);
 
+        randomCard();
+    }
+
+    function maxWitdh(){
+        let x = lobby.players.find(p => p.id === "999").cards.length;
+        return `${100 / (x + 1)}vw`
+    }
     return(
         <Container sx={{maxWidth: '100vw', minWidth: '100vw'}}>
+            <Button variant={"outlined"} onClick={() => changeTurn()}>
+                <Typography>
+                    End turn
+                </Typography>
+            </Button>
+            <Button onClick={() => randomCard()}>
+                <FaDice size={42}/>
+            </Button>
             <h3>{currentTurn.nickname}s turn</h3>
-            <Box sx={{display: 'flex', justifyContent: 'center', p: 5}}>
+            <Box sx={{display: 'flex', justifyContent: 'center', p: 5, flexDirection: 'column'}}>
+                <Typography sx={{m: 'auto'}}>
+                    {currentCategory}
+                </Typography>
                 <CurrentCard card={currentCard}/>
             </Box>
             <Container sx={{
@@ -178,20 +259,47 @@ function LobbyPage({ data, cards }: InferGetServerSidePropsType<typeof getServer
 
             }}>
                 {lobby.players.filter(p => p.id !== "999").map(p => (
-                    <OtherPlayerCard key={p.id} player={p} beforeButton={(index, pid) => beforeAction(index, pid)} afterButton={(index, pid) => afterAction(index, pid)}/>
+                    <OtherPlayerCard key={p.id} player={p} beforeButton={(index, pid) => beforeAction(index, pid)} afterButton={(index, pid) => afterAction(index, pid)} isPlayersTurn={currentTurn.id === mySocketId}/>
                 ))}
             </Box>
             <Box>
-                <Box sx={{ border: 1, borderRadius: 3, borderWidth:2, backgroundColor: "#264653", width: "75vw", m: 'auto', mt: 5, pt: 10}}>
+                <Box sx={{ border: 1, borderRadius: 3, borderWidth:2, backgroundColor: "#264653", width: "75vw", m: 'auto', mt: 5}}>
 
                     <Box sx={{
                         display: 'flex',
                         flexDirection: 'row',
                         p: 1,
                         m: 1,
+                        backgroundColor: "lightBlue"
 
                     }}>
 
+                        {lobby.players.find(p => p.id === "999").cards.sort((a,b) => parseInt(a.year) - parseInt(b.year)).map((c, index) => (
+                            <Grid key={index} sx={{display: 'flex', flexDirection: "row", m: 'auto'}}>
+                                {index === 0 && (
+                                   <Button disabled={currentTurn.id !== mySocketId} onClick={() => beforeAction(index, "999")}>
+                                    <Container>
+                                        <SelectSvg/>
+                                    </Container>
+
+                                    </Button>
+                                )}
+                                <CardOnBoard card={c}/>
+                                <Button disabled={currentTurn.id !== mySocketId} onClick={() => afterAction(index, "999")}>
+                                    <Container>
+                                        <SelectSvg/>
+                                    </Container>
+                                </Button>
+                            </Grid>
+
+                        ))}
+                    </Box>
+                    <Box sx={{
+                        display: 'flex',
+                        flexDirection: 'row',
+                        p: 1,
+                        m: 1,
+                    }}>
                         <Typography sx={{m: 'auto'}}>{lobby.players.find(p => p.id == "999") && lobby.players.find(p => p.id == "999").nickname}</Typography>
                         <Typography sx={{m: 'auto'}}>Score: {lobby.players.find(p => p.id == "999") && lobby.players.find(p => p.id == "999").score}</Typography>
 
