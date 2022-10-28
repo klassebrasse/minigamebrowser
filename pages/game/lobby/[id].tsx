@@ -160,29 +160,54 @@ function LobbyPage({ data, cards }: InferGetServerSidePropsType<typeof getServer
 
     function beforeAction(index: number, pid: string){
         const playerCards = lobby.players.find(p => p.id === pid).cards;
-
+        const playerIndex = lobby.players.findIndex(p => p.id === pid);
         if (currentCard.year < playerCards[index].year || currentCard.year === playerCards[index].year){
-            alert("Yes. " + currentCard.year + " is before " + playerCards[index].year)
+/*            alert("Yes. " + currentCard.year + " is before " + playerCards[index].year)
             let temp = lobby;
             temp.players.find(p => p.id === pid).cards.push(currentCard);
-            setLobby(temp);
+            setLobby(temp);*/
+
+            setLobby(prevState => {
+
+                let temp = {
+                    ...prevState,
+                    players: [...prevState.players]
+                }
+                temp.players[playerIndex].cards.push(currentCard);
+
+                return temp;
+            })
         }
         else {
             alert("wrong")
             changeTurn();
         }
     }
-
+/*    setSwList(prevState => [
+        newCharacter,
+        ...prevState
+    ])*/
     function afterAction(index: number, pid: string){
         const playerCards = lobby.players.find(p => p.id === pid).cards;
-
+        const playerIndex = lobby.players.findIndex(p => p.id === pid);
         //If last card
         if (playerCards.length === index + 1){
             if (currentCard.year > playerCards[index].year || currentCard.year === playerCards[index].year){
-                alert("Yes. " + currentCard.year + " is after " + playerCards[index].year)
-                let temp = lobby;
+                //alert("Yes. " + currentCard.year + " is after " + playerCards[index].year)
+/*                let temp = lobby;
                 temp.players.find(p => p.id === pid).cards.push(currentCard);
-                setLobby(temp);
+                setLobby(temp);*/
+                setLobby(prevState => {
+
+                    let temp = {
+                        ...prevState,
+                        players: [...prevState.players]
+                    }
+                    temp.players[playerIndex].cards.push(currentCard);
+
+                    return temp;
+                })
+
             }
             else {
                 alert("wrong")
@@ -191,10 +216,20 @@ function LobbyPage({ data, cards }: InferGetServerSidePropsType<typeof getServer
         }
         else {
             if ((currentCard.year > playerCards[index].year && currentCard.year < playerCards[index + 1].year) || (currentCard.year === playerCards[index].year && currentCard.year === playerCards[index + 1].year)){
-                alert("Yes. " + currentCard.year + " is after " + playerCards[index].year + ". And " + currentCard.year + " is before " + playerCards[index + 1].year)
-                let temp = lobby;
+                //alert("Yes. " + currentCard.year + " is after " + playerCards[index].year + ". And " + currentCard.year + " is before " + playerCards[index + 1].year)
+/*                let temp = lobby;
                 temp.players.find(p => p.id === pid).cards.push(currentCard);
-                setLobby(temp);
+                setLobby(temp);*/
+                setLobby(prevState => {
+
+                    let temp = {
+                        ...prevState,
+                        players: [...prevState.players]
+                    }
+                    temp.players[playerIndex].cards.push(currentCard);
+
+                    return temp;
+                })
             }
             else {
                 alert("wrong")
