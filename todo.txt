@@ -1,7 +1,7 @@
 ToDo:
-Fix buttons between cards
-Change turn on guess
 ICard: color, category
-Roll dice ✓
 Safe zone/ unsafe zone
 Implement socket.io
+
+Roll dice ✓
+Fix buttons between cards ✓

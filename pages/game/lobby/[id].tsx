@@ -94,7 +94,10 @@ function LobbyPage({ data, cards }: InferGetServerSidePropsType<typeof getServer
         let index = 0;
         await lobby.players.forEach(p => {
             if(p.cards.length < 1){
-                p.cards.push(cards[0][index]);
+                let c = cards[0][index] as ICard;
+                c.isSafe = true;
+                c.color = 'green';
+                p.cards.push(c);
             }
             index++;
         })
@@ -162,13 +165,8 @@ function LobbyPage({ data, cards }: InferGetServerSidePropsType<typeof getServer
         const playerCards = lobby.players.find(p => p.id === pid).cards;
         const playerIndex = lobby.players.findIndex(p => p.id === pid);
         if (currentCard.year < playerCards[index].year || currentCard.year === playerCards[index].year){
-/*            alert("Yes. " + currentCard.year + " is before " + playerCards[index].year)
-            let temp = lobby;
-            temp.players.find(p => p.id === pid).cards.push(currentCard);
-            setLobby(temp);*/
-
+            currentCard.isSafe = false;
             setLobby(prevState => {
-
                 let temp = {
                     ...prevState,
                     players: [...prevState.players]
@@ -180,23 +178,17 @@ function LobbyPage({ data, cards }: InferGetServerSidePropsType<typeof getServer
         }
         else {
             alert("wrong")
+            removeUnsafeCards(playerIndex)
             changeTurn();
         }
     }
-/*    setSwList(prevState => [
-        newCharacter,
-        ...prevState
-    ])*/
     function afterAction(index: number, pid: string){
         const playerCards = lobby.players.find(p => p.id === pid).cards;
         const playerIndex = lobby.players.findIndex(p => p.id === pid);
         //If last card
         if (playerCards.length === index + 1){
             if (currentCard.year > playerCards[index].year || currentCard.year === playerCards[index].year){
-                //alert("Yes. " + currentCard.year + " is after " + playerCards[index].year)
-/*                let temp = lobby;
-                temp.players.find(p => p.id === pid).cards.push(currentCard);
-                setLobby(temp);*/
+                currentCard.isSafe = false;
                 setLobby(prevState => {
 
                     let temp = {
@@ -211,15 +203,13 @@ function LobbyPage({ data, cards }: InferGetServerSidePropsType<typeof getServer
             }
             else {
                 alert("wrong")
+                removeUnsafeCards(playerIndex)
                 changeTurn();
             }
         }
         else {
             if ((currentCard.year > playerCards[index].year && currentCard.year < playerCards[index + 1].year) || (currentCard.year === playerCards[index].year && currentCard.year === playerCards[index + 1].year)){
-                //alert("Yes. " + currentCard.year + " is after " + playerCards[index].year + ". And " + currentCard.year + " is before " + playerCards[index + 1].year)
-/*                let temp = lobby;
-                temp.players.find(p => p.id === pid).cards.push(currentCard);
-                setLobby(temp);*/
+                currentCard.isSafe = false;
                 setLobby(prevState => {
 
                     let temp = {
@@ -232,15 +222,28 @@ function LobbyPage({ data, cards }: InferGetServerSidePropsType<typeof getServer
                 })
             }
             else {
-                alert("wrong")
+                alert("wrong");
+                removeUnsafeCards(playerIndex)
                 changeTurn();
             }
         }
 
     }
+
     const mySocketId = "999";
-    const [indexTurn, setIndexTurn] = useState(0);
+    const [indexTurn, setIndexTurn] = useState(3);
+
     function changeTurn(){
+        setLobby(prevState => {
+            let temp = {
+                ...prevState,
+                lobby: {...prevState}
+            }
+            temp.players[indexTurn].cards.forEach(c => c.isSafe = true)
+
+            return temp;
+        })
+
         setCurrentTurn(lobby.players[indexTurn]);
         if (indexTurn == 3)
             setIndexTurn(0);
@@ -248,6 +251,18 @@ function LobbyPage({ data, cards }: InferGetServerSidePropsType<typeof getServer
             setIndexTurn(indexTurn + 1);
 
         randomCard();
+    }
+
+    function removeUnsafeCards(playerIndex: number){
+        setLobby(prevState => {
+            let temp = {
+                ...prevState,
+                players: [...prevState.players]
+            }
+            temp.players[playerIndex].cards = temp.players[playerIndex].cards.filter(c => c.isSafe === true)
+
+            return temp;
+        })
     }
 
     function maxWitdh(){
