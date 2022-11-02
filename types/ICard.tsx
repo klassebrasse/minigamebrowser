@@ -4,3 +4,8 @@ export interface ICard {
     color: string,
     isSafe: boolean
 }
+
+export interface ICardDeck {
+    category: string,
+    cards: ICard[]
+}

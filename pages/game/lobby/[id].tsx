@@ -1,42 +1,22 @@
+import * as React from "react";
 import {useEffect, useState} from "react";
-import Head from "next/head";
 import {ILobby} from "../../../types/ILobby";
-import lobbydata from "../../../data/lobby.json"
-import {
-    Container,
-    Box,
-    CardHeader,
-    Card,
-    CardContent,
-    Typography,
-    CardActions,
-    Modal,
-    Button,
-    IconButton
-} from "@mui/material";
-import HeaderBox from "../../../components/HeaderBox";
-import PlayerList from "../../../components/PlayerList";
-import playersdata from "../../../data/players.json";
+import {Box, Button, Container, Modal, Typography} from "@mui/material";
 import {InferGetServerSidePropsType} from "next";
 import socket from "../../../services/socket";
-import getHistorical from "../../../services/api";
-import fetch, {Headers} from "node-fetch";
-import {ICard} from "../../../types/ICard";
+import {ICard, ICardDeck} from "../../../types/ICard";
 import MainCardDeck from "../../../components/GamePlayComponents/MainCardDeck";
 import {IPlayer} from "../../../types/IPlayer";
 import OtherPlayerCard from "../../../components/GamePlayComponents/OtherPlayerCard";
 import CurrentCard from "../../../components/GamePlayComponents/CurrentCard";
 import CircularStatic from "../../../components/ProgresSpinner";
-import * as React from "react";
 import CardOnBoard from "../../../components/GamePlayComponents/CardOnBoard";
 import {FaDice} from "react-icons/fa";
 import Grid from "@mui/system/Unstable_Grid";
-import {GiHorizontalFlip} from "react-icons/gi";
 import SelectSvg from "../../../public/SelectSvg";
 
 
-function LobbyPage({ data, cards }: InferGetServerSidePropsType<typeof getServerSideProps>) {
-
+function LobbyPage({ data }: InferGetServerSidePropsType<typeof getServerSideProps>) {
     const Lobby: ILobby = data;
     const [mainPlayerData, setMainPlayerData] = useState<IPlayer>(null);
     const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -46,13 +26,13 @@ function LobbyPage({ data, cards }: InferGetServerSidePropsType<typeof getServer
     const [currentCard, setCurrentCard] = useState<ICard>();
     const [currentCategory, setCurrentCategory] = useState("");
 
-    const [history, setHistory] = useState<ICard[]>();
+    const [history, setHistory] = useState<ICardDeck>();
     const [currentHistoryCard, setCurrentHistoryCard] = useState(0);
-    const [country, setCountry] = useState<ICard[]>();
+    const [country, setCountry] = useState<ICardDeck>();
     const [currentCountryCard, setCurrentCountryCard] = useState(0);
-    const [sports, setSports] = useState<ICard[]>();
+    const [sports, setSports] = useState<ICardDeck>();
     const [currentSportsCard, setCurrentSportsCard] = useState(0);
-    const [tech, setTech] = useState<ICard[]>();
+    const [tech, setTech] = useState<ICardDeck>();
     const [currentTechCard, setCurrentTechCard] = useState(0);
 
     const [currentTurn, setCurrentTurn] = useState<IPlayer>(Lobby.players[3]);
@@ -60,105 +40,63 @@ function LobbyPage({ data, cards }: InferGetServerSidePropsType<typeof getServer
     const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
     useEffect(() => {
+
+        if(!data){
+            setLobby(data)
+            console.log('loop?')
+        }
         if(progress !== 100){
             (async () => {
-                await getCards();
-                await getFirstCards();
+
                 setProgress(100)
             })()
         }
 
-        //alert(currentTurn.nickname)
-
-/*        if(progress !== 100){
-            setProgress(5);
-            //setLobby(Lobby);
-
-            (async () => {
-                await getCards();
-                await sleep(400);
-                setProgress(100)
-            })()
-        }*/
+    })
 
 
-    },[lobby])
-    async function getCards() {
-        setHistory(cards[0]);
-        setSports(cards[1]);
-        setCountry(cards[2]);
-        setTech(cards[3]);
-    }
-
-    async function getFirstCards(){
-        let index = 0;
-        await lobby.players.forEach(p => {
-            if(p.cards.length < 1){
-                let c = cards[0][index] as ICard;
-                c.isSafe = true;
-                c.color = 'green';
-                p.cards.push(c);
-            }
-            index++;
-        })
-    }
 
     function cardChosen(deckChosen){
-        switch (deckChosen) {
+        alert('not implemented')
+/*        switch (deckChosen) {
             case 'history':
-                setCurrentCard(history[currentHistoryCard])
+                console.log(history)
+                setCurrentCard(history.cards[currentHistoryCard])
                 setCurrentHistoryCard(currentHistoryCard + 1)
                 setCurrentCategory('history')
                 break;
 
             case 'sports':
-                setCurrentCard(sports[currentSportsCard])
+                setCurrentCard(sports.cards[currentSportsCard])
                 setCurrentSportsCard(currentSportsCard + 1)
                 setCurrentCategory('sports')
                 break;
 
             case 'tech':
-                setCurrentCard(tech[currentTechCard])
+                setCurrentCard(tech.cards[currentTechCard])
                 setCurrentTechCard(currentTechCard + 1)
                 setCurrentCategory('tech')
                 break;
 
             case 'country':
-                setCurrentCard(country[currentCountryCard])
+                setCurrentCard(country.cards[currentCountryCard])
                 setCurrentCountryCard(currentCountryCard + 1)
                 setCurrentCategory('country')
                 break;
-        }
+        }*/
     }
 
     function randomCard(){
-        const randomDeck = Math.floor(Math.random() * 4);
-        switch (randomDeck) {
-            case 0:
-                setCurrentCard(history[currentHistoryCard])
-                setCurrentHistoryCard(currentHistoryCard + 1)
-                setCurrentCategory('history')
-                break;
-
-            case 1:
-                setCurrentCard(sports[currentSportsCard])
-                setCurrentSportsCard(currentSportsCard + 1)
-                setCurrentCategory('sports')
-                break;
-
-            case 2:
-                setCurrentCard(tech[currentTechCard])
-                setCurrentTechCard(currentTechCard + 1)
-                setCurrentCategory('tech')
-                break;
-
-            case 3:
-                setCurrentCard(country[currentCountryCard])
-                setCurrentCountryCard(currentCountryCard + 1)
-                setCurrentCategory('country')
-                break;
-
-        }
+        socket.emit('random card', '234', callback => {
+            const newCard = callback.lobby.currentCard;
+            console.log('random' + callback.lobby.currentCard.year)
+            setLobby(prevState => {
+                return {
+                   ...prevState,
+                   currentCard: newCard
+               };
+            })
+        })
     }
 
     function beforeAction(index: number, pid: string){
@@ -284,7 +222,7 @@ function LobbyPage({ data, cards }: InferGetServerSidePropsType<typeof getServer
                 <Typography sx={{m: 'auto'}}>
                     {currentCategory}
                 </Typography>
-                <CurrentCard card={currentCard}/>
+                <CurrentCard card={lobby.currentCard}/>
             </Box>
             <Container sx={{
                     display: 'flex',
@@ -376,25 +314,9 @@ function LobbyPage({ data, cards }: InferGetServerSidePropsType<typeof getServer
 }
 
 export async function getServerSideProps(context) {
-    let data: ILobby = lobbydata.find(lid => lid.id == context.query.id);
+    //let data: ILobby;
 
-    //If socket.id exists on lobby: Authorized
-    let socketId = data.players.find(p => p.id == socket.id);
-
-    let cards: ICard[] = [];
-
-    //socket.emit('get lobby', (context.query.id, callback) => {
-    //      callback.cards
-    //      callback.lobby
-    //    }
-
-    cards.push(await getHistorical('sweden'));
-    cards.push(await getHistorical('sports'));
-    cards.push(await getHistorical('country'));
-    cards.push(await getHistorical('tech'));
-
-
-
+    const data = await getDataFromServer(context.query.id)
 
     if(!data){
         return {
@@ -402,10 +324,23 @@ export async function getServerSideProps(context) {
         }
     }
 
-
-
     return {
-        props: {data, cards}, // will be passed to the page component as props
+        props: {data}, // will be passed to the page component as props
     }
 }
 export default LobbyPage;
+
+/*async function getDataFromServer(lid): Promise<{ data: ILobby; cards: ICard[] }> {
+    let data: ILobby;
+    let cards: ICard[];
+    await socket.emit('connect to lobby', lid, async callback => {
+        [[data], cards] = await Promise.all([Promise.all([callback.lobby]), callback.cards]);
+    })
+    return {data, cards};
+}*/
+
+function getDataFromServer(lid){
+    return new Promise(resolve => socket.emit('connect to lobby', lid, callback => resolve(callback.lobby)));
+}
+
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
