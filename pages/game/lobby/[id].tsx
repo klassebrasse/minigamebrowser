@@ -21,7 +21,7 @@ function LobbyPage() {
     const router = useRouter();
     const data = router.query.id
 
-    const [mainPlayerData, setMainPlayerData] = useState<IPlayer>(null);
+    const [isCorrectAnswer, setIsCorrectAnswer] = useState(null)
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [progress, setProgress] = useState(0);
 
@@ -45,6 +45,7 @@ function LobbyPage() {
 
 
         socket.on('random card', (newLobby) => {
+            setIsCorrectAnswer(null)
             console.log('random card')
             const newCard = newLobby.currentCard;
             console.log('random' + newLobby.currentCard.year)
@@ -58,6 +59,7 @@ function LobbyPage() {
         })
 
         socket.on('turn changed', (newLobby) => {
+            setIsCorrectAnswer(null)
             setLobby(prevState => {
                 let temp = {
                     ...prevState,
@@ -72,12 +74,8 @@ function LobbyPage() {
 
         socket.on('guess checked', (newLobby, guessIs) => {
             console.log('guess checked')
-            console.log(newLobby.players)
-            if (guessIs)
-                alert(true)
-            else
-                alert(false)
 
+            setIsCorrectAnswer(guessIs)
 
             setLobby(prevState => {
                 let temp = {
@@ -85,6 +83,7 @@ function LobbyPage() {
                     lobby: {...prevState}
                 }
                 temp.players = newLobby.players;
+                temp.currentTurn = newLobby.currentTurn;
 
                 return temp;
             })
@@ -130,12 +129,12 @@ function LobbyPage() {
 
     function beforeAction(index: number, pid: string) {
         console.log('sending guess' + pid)
-        socket.emit('guess before', '234', index, pid);
+        socket.emit('guess before', data, index, pid);
     }
 
     function afterAction(index: number, pid: string) {
         console.log('sending guess')
-        socket.emit('guess after', '234', index, pid)
+        socket.emit('guess after', data, index, pid)
     }
 
     function changeTurn() {
@@ -158,6 +157,15 @@ function LobbyPage() {
     function maxWitdh() {
         let x = lobby.players.find(p => p.id === socket.id).cards.length;
         return `${100 / (x + 1)}vw`
+    }
+
+    function correctOrFalseAnswerText() {
+        if(isCorrectAnswer !== null){
+            return isCorrectAnswer ? 'Correct' : 'InCorrect'
+        }
+        else {
+            return ''
+        }
     }
 
     return (
@@ -188,11 +196,13 @@ function LobbyPage() {
                         p: 1,
                         pb: 5,
                         maxWidth: '60vw',
+                        minHeight: 100
                     }}>
-                        <MainCardDeck color="#528D70" category="History" cardClicked={() => cardChosen('history')}/>
+{/*                        <MainCardDeck color="#528D70" category="History" cardClicked={() => cardChosen('history')}/>
                         <MainCardDeck color="#658FC9" category="Sports" cardClicked={() => cardChosen('sports')}/>
                         <MainCardDeck color="#F77EEC" category="Country" cardClicked={() => cardChosen('country')}/>
-                        <MainCardDeck color="#FC8F3A" category="Tech" cardClicked={() => cardChosen('tech')}/>
+                        <MainCardDeck color="#FC8F3A" category="Tech" cardClicked={() => cardChosen('tech')}/>*/}
+                        <h1>{correctOrFalseAnswerText()}</h1>
                     </Container>
 
                     <Box sx={{
@@ -243,7 +253,7 @@ function LobbyPage() {
                                         )}
                                         <CardOnBoard card={c}/>
                                         <Button disabled={lobby.players[lobby.currentTurn].id !== socket.id}
-                                                onClick={() => afterAction(index, "999")}>
+                                                onClick={() => afterAction(index, socket.id)}>
                                             <Container>
                                                 <SelectSvg/>
                                             </Container>
