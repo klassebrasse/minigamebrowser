@@ -13,10 +13,13 @@ import {FaDice} from "react-icons/fa";
 import Grid from "@mui/system/Unstable_Grid";
 import SelectSvg from "../../../public/SelectSvg";
 import {SocketContext} from "../../../contexts/socketContext";
+import {useRouter} from "next/router";
 
 
-function LobbyPage({data}: InferGetServerSidePropsType<typeof getServerSideProps>) {
+function LobbyPage() {
     const socket = useContext(SocketContext);
+    const router = useRouter();
+    const data = router.query.id
 
     const [mainPlayerData, setMainPlayerData] = useState<IPlayer>(null);
     const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -32,10 +35,13 @@ function LobbyPage({data}: InferGetServerSidePropsType<typeof getServerSideProps
     }
 
     useEffect(() => {
-        (async () => {
+/*        (async () => {
             //Todo: Callback see if user is allowed
             setLobby(await getDataFromServer(data))
-        })()
+        })()*/
+        socket.emit('get lobby data', data, true, callback => {
+            setLobby(callback.lobby)
+        })
 
 
         socket.on('random card', (newLobby) => {
@@ -119,7 +125,7 @@ function LobbyPage({data}: InferGetServerSidePropsType<typeof getServerSideProps
     }
 
     function randomCard() {
-        socket.emit('random card', '234');
+        socket.emit('random card', lobby.id);
     }
 
     function beforeAction(index: number, pid: string) {
@@ -132,12 +138,9 @@ function LobbyPage({data}: InferGetServerSidePropsType<typeof getServerSideProps
         socket.emit('guess after', '234', index, pid)
     }
 
-    const mySocketId = "999";
-    const [indexTurn, setIndexTurn] = useState(3);
-
     function changeTurn() {
         //Todo: Ide att skicka socket.id för att players.findIndex på serverside
-        socket.emit('change turn', '234')
+        socket.emit('change turn', lobby.id)
     }
 
     function removeUnsafeCards(playerIndex: number) {
@@ -153,7 +156,7 @@ function LobbyPage({data}: InferGetServerSidePropsType<typeof getServerSideProps
     }
 
     function maxWitdh() {
-        let x = lobby.players.find(p => p.id === "999").cards.length;
+        let x = lobby.players.find(p => p.id === socket.id).cards.length;
         return `${100 / (x + 1)}vw`
     }
 
@@ -200,11 +203,11 @@ function LobbyPage({data}: InferGetServerSidePropsType<typeof getServerSideProps
 
 
                     }}>
-                        {lobby.players.filter(p => p.id !== "999").map(p => (
+                        {lobby.players.filter(p => p.id !== socket.id).map(p => (
                             <OtherPlayerCard key={p.id} player={p}
                                              beforeButton={(index, pid) => beforeAction(index, pid)}
                                              afterButton={(index, pid) => afterAction(index, pid)}
-                                             isPlayersTurn={lobby.players[lobby.currentTurn].id === mySocketId}/>
+                                             isPlayersTurn={lobby.players[lobby.currentTurn].id === socket.id}/>
                         ))}
                     </Box>
                     <Box>
@@ -227,11 +230,11 @@ function LobbyPage({data}: InferGetServerSidePropsType<typeof getServerSideProps
 
                             }}>
 
-                                {lobby.players.find(p => p.id === "999").cards.sort((a, b) => parseInt(a.year) - parseInt(b.year)).map((c, index) => (
+                                {lobby.players.find(p => p.id === socket.id).cards.sort((a, b) => parseInt(a.year) - parseInt(b.year)).map((c, index) => (
                                     <Grid key={index} sx={{display: 'flex', flexDirection: "row", m: 'auto'}}>
                                         {index === 0 && (
-                                            <Button disabled={lobby.players[lobby.currentTurn].id !== mySocketId}
-                                                    onClick={() => beforeAction(index, "999")}>
+                                            <Button disabled={lobby.players[lobby.currentTurn].id !== socket.id}
+                                                    onClick={() => beforeAction(index, socket.id)}>
                                                 <Container>
                                                     <SelectSvg/>
                                                 </Container>
@@ -239,7 +242,7 @@ function LobbyPage({data}: InferGetServerSidePropsType<typeof getServerSideProps
                                             </Button>
                                         )}
                                         <CardOnBoard card={c}/>
-                                        <Button disabled={lobby.players[lobby.currentTurn].id !== mySocketId}
+                                        <Button disabled={lobby.players[lobby.currentTurn].id !== socket.id}
                                                 onClick={() => afterAction(index, "999")}>
                                             <Container>
                                                 <SelectSvg/>
@@ -256,9 +259,9 @@ function LobbyPage({data}: InferGetServerSidePropsType<typeof getServerSideProps
                                 m: 1,
                             }}>
                                 <Typography
-                                    sx={{m: 'auto'}}>{lobby.players.find(p => p.id == "999") && lobby.players.find(p => p.id == "999").nickname}</Typography>
+                                    sx={{m: 'auto'}}>{lobby.players.find(p => p.id == socket.id) && lobby.players.find(p => p.id == socket.id).nickname}</Typography>
                                 <Typography
-                                    sx={{m: 'auto'}}>Score: {lobby.players.find(p => p.id == "999") && lobby.players.find(p => p.id == "999").score}</Typography>
+                                    sx={{m: 'auto'}}>Score: {lobby.players.find(p => p.id == socket.id) && lobby.players.find(p => p.id == socket.id).score}</Typography>
 
 
                             </Box>
@@ -286,34 +289,59 @@ function LobbyPage({data}: InferGetServerSidePropsType<typeof getServerSideProps
     )
 }
 
-export async function getServerSideProps(context) {
-    //let data: ILobby;
-
-    /*
-        const data = await getDataFromServer(context.query.id)
-
-        if(!data){
-            return {
-                notFound: true
-            }
-        }
-    */
-    const data = context.query.id;
-
-    return {
-        props: {data}, // will be passed to the page component as props
-    }
-}
-
 export default LobbyPage;
 
-/*async function getDataFromServer(lid): Promise<{ data: ILobby; cards: ICard[] }> {
-    let data: ILobby;
-    let cards: ICard[];
-    await socket.emit('connect to lobby', lid, async callback => {
-        [[data], cards] = await Promise.all([Promise.all([callback.lobby]), callback.cards]);
-    })
-    return {data, cards};
-}*/
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+/*
+
+  {
+    "id": "234",
+    "gameName": "Uno",
+    "players": [
+      {
+        "id": "123",
+        "nickname": "KlasseBrasse",
+        "score": 0,
+        "cards": [
+
+        ]
+      },
+      {
+        "id": "234",
+        "nickname": "Jöjje",
+        "score": 0,
+        "cards": [
+
+        ]
+      },
+      {
+        "id": "345",
+        "nickname": "Jöns",
+        "score": 0,
+        "cards": [
+
+        ]
+      },
+      {
+        "id": "999",
+        "nickname": "MainPlayer",
+        "score": 0,
+        "cards": [
+
+        ]
+      }
+    ],
+    "currentTurn": 0,
+    "cardDecks": [],
+    "currentCard": {},
+    "currentHistoryCardDeckIndex": 0,
+    "currentSportsCardDeckIndex": 0,
+    "currentTechCardDeckIndex": 0,
+    "currentCountryCardDeckIndex": 0,
+    "currentCat": ""
+
+  }
+
+ */
