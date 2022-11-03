@@ -9,7 +9,7 @@ import playersdata from "../../data/players.json";
 import {ILobby} from "../../types/ILobby";
 import lobbydata from "../../data/lobby.json";
 import {InferGetServerSidePropsType} from "next";
-import socket from "../../services/socket";
+import {socket} from "../../services/socket";
 import {useRouter} from "next/router";
 
 
@@ -91,8 +91,8 @@ function GamePage({ data }: InferGetServerSidePropsType<typeof getServerSideProp
 
 export async function getServerSideProps(context) {
     //YuAhR6x2/fckgC8JWJOcBA==K7gB4sAqTFD250vK
-    let data: ILobby;
-    data = lobbydata.find(lid => lid.id == context.query.id);
+
+    const data = lobbydata.find(lid => lid.id == context.query.id);
     /*    const meta = {
             'X-Api-Key': 'YuAhR6x2/fckgC8JWJOcBA==K7gB4sAqTFD250vK'
         };
@@ -114,7 +114,7 @@ export async function getServerSideProps(context) {
             notFound: true
         }
     }
-    data.id = context.query.id
+
     return {
         props: {data}, // will be passed to the page component as props
     }

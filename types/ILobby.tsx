@@ -11,5 +11,6 @@ export interface ILobby {
     currentHistoryCardDeckIndex: number,
     currentSportsCardDeckIndex: number,
     currentTechCardDeckIndex: number,
-    currentCountryCardDeckIndex: number
+    currentCountryCardDeckIndex: number,
+    currentCat: string
 }
