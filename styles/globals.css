@@ -25,6 +25,8 @@ a {
   body {
     color: white;
     background-image: linear-gradient(to bottom right, #264653, #2a9d8f);
+    background-repeat: no-repeat;
+    background-attachment: fixed;
   }
 }
 .MuiContainer-root {

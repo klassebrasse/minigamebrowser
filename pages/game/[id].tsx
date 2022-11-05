@@ -1,20 +1,14 @@
-import {useContext, useEffect, useState} from "react";
+import {useEffect, useState} from "react";
 import Head from "next/head";
-import {IGame} from "../../types/IGame";
-import gamesdata from "../../data/games.json"
 import {Container, Box, Modal, Typography, Input, Button} from "@mui/material";
 import HeaderBox from "../../components/HeaderBox";
 import PlayerList from "../../components/PlayerList";
-import playersdata from "../../data/players.json";
 import {ILobby} from "../../types/ILobby";
-import lobbydata from "../../data/lobby.json";
-import {InferGetServerSidePropsType} from "next";
 import {useRouter} from "next/router";
-import {SocketContext} from "../../contexts/socketContext";
-
+import {useSocket} from "../../contexts/socketContext";
 
 function GamePage() {
-    const socket = useContext(SocketContext);
+    const socket = useSocket();
     const router = useRouter();
     const paramId = router.query.id
 
@@ -23,11 +17,14 @@ function GamePage() {
     const [username, setUsername] = useState("");
 
     useEffect(()=>{
+        if(!router.isReady) return;
+        console.log(paramId)
         socket.emit('get lobby data', paramId, false, callback => {
             setLobby(callback.lobby)
         })
 
         socket.on('new user joined', lobby => {
+            console.log(lobby)
             if (lobby){
                 setLobby(prevState => {
                     let temp = {
@@ -48,7 +45,7 @@ function GamePage() {
             router.push(`/game/lobby/${lobbyId}`);
         });
 
-    },[])
+    },[router.isReady])
 
     function newUser() {
         socket.emit('join room and get lobby data', paramId, username, socket.id);
@@ -83,12 +80,12 @@ function GamePage() {
 
                     <Modal open={isModalOpen}>
                         <Box sx={style}>
-                            <Typography>
+                            <h2 style={{color: "#96B1AC"}}>
                                 Insert username
-                            </Typography>
+                            </h2>
                             <Box sx={{display: 'flex', justifyContent: 'space-between', mt: 2}}>
-                                <Input autoFocus sx={{color: "white"}} onChange={(event) => setUsername(event.target.value)}/>
-                                <Button variant="outlined" onClick={() => newUser()}>
+                                <Input autoFocus sx={{color: "#96B1AC"}} onChange={(event) => setUsername(event.target.value)}/>
+                                <Button style={{color: "#96B1AC", borderColor: "#96B1AC"}} variant="outlined" onClick={() => newUser()}>
                                     Lets Go
                                 </Button>
                             </Box>

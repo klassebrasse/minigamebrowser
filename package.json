@@ -14,9 +14,10 @@
     "@mui/material": "^5.10.8",
     "next": "^12.3.1",
     "node-fetch": "^3.2.10",
-    "react": "18.2.0",
+    "react": "^18.2.0",
     "react-dom": "18.2.0",
     "react-icons": "^4.6.0",
+    "react-spinners": "^0.13.6",
     "socket.io-client": "^4.5.2"
   },
   "devDependencies": {

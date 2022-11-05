@@ -1,30 +1,30 @@
 import * as React from "react";
-import {useContext, useEffect, useState} from "react";
+import {useEffect, useState} from "react";
 import {ILobby} from "../../../types/ILobby";
 import {Box, Button, Container, Modal, Typography} from "@mui/material";
-import {InferGetServerSidePropsType} from "next";
-import MainCardDeck from "../../../components/GamePlayComponents/MainCardDeck";
-import {IPlayer} from "../../../types/IPlayer";
 import OtherPlayerCard from "../../../components/GamePlayComponents/OtherPlayerCard";
 import CurrentCard from "../../../components/GamePlayComponents/CurrentCard";
-import CircularStatic from "../../../components/ProgresSpinner";
 import CardOnBoard from "../../../components/GamePlayComponents/CardOnBoard";
 import {FaDice} from "react-icons/fa";
 import Grid from "@mui/system/Unstable_Grid";
 import SelectSvg from "../../../public/SelectSvg";
-import {SocketContext} from "../../../contexts/socketContext";
 import {useRouter} from "next/router";
+import {useSocket} from "../../../contexts/socketContext";
+
 
 
 function LobbyPage() {
-    const socket = useContext(SocketContext);
+    const socket = useSocket();
     const router = useRouter();
-    const data = router.query.id
+    const data = router.query.id;
 
     const [isCorrectAnswer, setIsCorrectAnswer] = useState(null)
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [progress, setProgress] = useState(0);
 
+    const [isEndTurnDisabled, setIsEndTurnDisabled] = useState(true);
+    const [isRandomCardDisabled, setIsRandomCardDisabled] = useState(false);
+    const [isAllowedToGuess, setIsAllowedToGuess] = useState(false);
     const [lobby, setLobby] = useState<ILobby>(null);
 
 
@@ -56,6 +56,7 @@ function LobbyPage() {
                     currentCat: newLobby.currentCat
                 };
             })
+            setIsAllowedToGuess(true)
         })
 
         socket.on('turn changed', (newLobby) => {
@@ -70,6 +71,9 @@ function LobbyPage() {
 
                 return temp;
             })
+            setIsAllowedToGuess(false)
+            setIsEndTurnDisabled(true)
+            setIsRandomCardDisabled(false)
         })
 
         socket.on('guess checked', (newLobby, guessIs) => {
@@ -87,6 +91,9 @@ function LobbyPage() {
 
                 return temp;
             })
+            setIsAllowedToGuess(false)
+            setIsEndTurnDisabled(!guessIs)
+            setIsRandomCardDisabled(false)
         })
 
 
@@ -124,6 +131,8 @@ function LobbyPage() {
     }
 
     function randomCard() {
+        setIsEndTurnDisabled(true)
+        setIsRandomCardDisabled(true)
         socket.emit('random card', lobby.id);
     }
 
@@ -142,18 +151,6 @@ function LobbyPage() {
         socket.emit('change turn', lobby.id)
     }
 
-    function removeUnsafeCards(playerIndex: number) {
-        setLobby(prevState => {
-            let temp = {
-                ...prevState,
-                players: [...prevState.players]
-            }
-            temp.players[playerIndex].cards = temp.players[playerIndex].cards.filter(c => c.isSafe === true)
-
-            return temp;
-        })
-    }
-
     function maxWitdh() {
         let x = lobby.players.find(p => p.id === socket.id).cards.length;
         return `${100 / (x + 1)}vw`
@@ -161,10 +158,40 @@ function LobbyPage() {
 
     function correctOrFalseAnswerText() {
         if(isCorrectAnswer !== null){
-            return isCorrectAnswer ? 'Correct' : 'InCorrect'
+            return isCorrectAnswer ? (
+                    <Box sx={{textAlign: 'center'}}>
+                        <Typography color='#2a9d8f' fontSize={22} fontWeight='bold'>Correct</Typography>
+                        <Typography color='#2a9d8f' fontSize={22} fontWeight='bold'>{lobby.currentCard.year}</Typography>
+                    </Box>
+                )
+                : (
+                    <Box sx={{textAlign: 'center'}}>
+                        <Typography color='#2a9d8f' fontSize={22} fontWeight='bold'>Incorrect</Typography>
+                        <Typography color='#2a9d8f' fontSize={22} fontWeight='bold'>{lobby.currentCard.year}</Typography>
+                    </Box>
+                )
         }
         else {
             return ''
+        }
+    }
+
+    function getDisableEndTurn(): boolean {
+        if (socket.id === lobby.players[lobby.currentTurn].id)
+        {
+            return isEndTurnDisabled;
+        }
+        else {
+            return true
+        }
+    }
+    function getDisableRandomCard(): boolean {
+        if (socket.id === lobby.players[lobby.currentTurn].id)
+        {
+            return isRandomCardDisabled;
+        }
+        else {
+            return true
         }
     }
 
@@ -174,13 +201,13 @@ function LobbyPage() {
                 <h1>loading</h1>
             ) : (
                 <div>
-                    <Button variant={"outlined"} onClick={() => changeTurn()}>
+                    <Button disabled={getDisableEndTurn()} variant={"outlined"} onClick={() => changeTurn()}>
                         <Typography>
                             End turn
                         </Typography>
                     </Button>
-                    <Button onClick={() => randomCard()}>
-                        <FaDice size={42}/>
+                    <Button disabled={getDisableRandomCard()} onClick={() => randomCard()}>
+                        <FaDice color='#2a9d8f' size={42}/>
                     </Button>
                     <h3>{lobby.players[lobby.currentTurn].nickname}s turn</h3>
                     <Box sx={{display: 'flex', justifyContent: 'center', p: 5, flexDirection: 'column'}}>
@@ -195,14 +222,17 @@ function LobbyPage() {
                         justifyContent: 'space-evenly',
                         p: 1,
                         pb: 5,
-                        maxWidth: '60vw',
-                        minHeight: 100
+                        maxWidth: '30vw',
+                        maxHeight: '10vh',
+                        minHeight: 100,
+                        backgroundColor: '#264653',
+                        borderRadius: 2
                     }}>
 {/*                        <MainCardDeck color="#528D70" category="History" cardClicked={() => cardChosen('history')}/>
                         <MainCardDeck color="#658FC9" category="Sports" cardClicked={() => cardChosen('sports')}/>
                         <MainCardDeck color="#F77EEC" category="Country" cardClicked={() => cardChosen('country')}/>
                         <MainCardDeck color="#FC8F3A" category="Tech" cardClicked={() => cardChosen('tech')}/>*/}
-                        <h1>{correctOrFalseAnswerText()}</h1>
+                        {correctOrFalseAnswerText()}
                     </Container>
 
                     <Box sx={{
@@ -243,7 +273,7 @@ function LobbyPage() {
                                 {lobby.players.find(p => p.id === socket.id).cards.sort((a, b) => parseInt(a.year) - parseInt(b.year)).map((c, index) => (
                                     <Grid key={index} sx={{display: 'flex', flexDirection: "row", m: 'auto'}}>
                                         {index === 0 && (
-                                            <Button disabled={lobby.players[lobby.currentTurn].id !== socket.id}
+                                            <Button disabled={lobby.players[lobby.currentTurn].id !== socket.id || !isAllowedToGuess}
                                                     onClick={() => beforeAction(index, socket.id)}>
                                                 <Container>
                                                     <SelectSvg/>
@@ -252,7 +282,7 @@ function LobbyPage() {
                                             </Button>
                                         )}
                                         <CardOnBoard card={c}/>
-                                        <Button disabled={lobby.players[lobby.currentTurn].id !== socket.id}
+                                        <Button disabled={lobby.players[lobby.currentTurn].id !== socket.id || !isAllowedToGuess}
                                                 onClick={() => afterAction(index, socket.id)}>
                                             <Container>
                                                 <SelectSvg/>
